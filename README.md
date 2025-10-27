@@ -10,7 +10,6 @@ Ce projet a pour but de faciliter l'accès à l'information locale en s'appuyant
 - **Python**
 - **Gestionnaire de dépendances : [UV](https://github.com/astral-sh/uv)**
 - **LangChain**
-- **LangGraph**
 
 ## Installation
 1. Installez [UV](https://github.com/astral-sh/uv) :

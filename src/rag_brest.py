@@ -13,6 +13,7 @@ from .guardrail import guardrail, response_guardrail
 from .reformulate import reformulate_question
 from .retrieve import retrieve_documents
 from .generate import generate_prompt
+from .rerank import rerank_documents
 
 # Définir les embeddings et le LLM
 embeddings = OpenAIEmbeddings()
@@ -24,7 +25,7 @@ vector_store = ingest_documents(embeddings)
 
 def ask_question(question: str) -> tuple[str, list]:
     """
-    Pipeline RAG complet : guardrail -> reformulation -> recherche -> génération -> guardrail réponse.
+    Pipeline RAG complet : guardrail -> reformulation -> recherche -> reranking -> génération -> guardrail réponse.
 
     Args:
         question: La question de l'utilisateur
@@ -42,10 +43,13 @@ def ask_question(question: str) -> tuple[str, list]:
     # 3. Recherche de documents pertinents
     retrieved_docs = retrieve_documents(vector_store, reformulated_question)
 
-    # 4. Préparer le contexte
-    context = "\n\n".join(doc.page_content for doc in retrieved_docs)
+    # 4. Reranking des documents
+    reranked_docs = rerank_documents(retrieved_docs, reformulated_question)
 
-    # 5. Générer le prompt
+    # 5. Préparer le contexte
+    context = "\n\n".join(doc.page_content for doc in reranked_docs)
+
+    # 6. Générer le prompt
     prompt_text = generate_prompt(question, context)
 
     # 6. Générer la réponse avec le LLM
@@ -56,4 +60,4 @@ def ask_question(question: str) -> tuple[str, list]:
     if not response_guardrail(generated_response):
         return "Désolé, la réponse générée n'est pas appropriée.", []
 
-    return generated_response, retrieved_docs
+    return generated_response, reranked_docs
