@@ -1,3 +1,4 @@
+import os
 from dotenv import load_dotenv
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
@@ -40,14 +41,16 @@ def ask_question(question: str) -> tuple[str, list]:
     # 2. Reformulation de la question
     reformulated_question = reformulate_question(question)
 
-    # 3. Recherche de documents pertinents
-    retrieved_docs = retrieve_documents(vector_store, reformulated_question)
-
-    # 4. Reranking des documents
-    reranked_docs = rerank_documents(retrieved_docs, reformulated_question)
+    retrieved_docs = []
+    if not os.environ.get("RERANKING"):
+        # 3. Recherche de documents pertinents
+        retrieved_docs = retrieve_documents(vector_store, reformulated_question)
+    else:
+        # 4. Reranking des documents
+        retrieved_docs = rerank_documents(reformulated_question, vector_store)
 
     # 5. Préparer le contexte
-    context = "\n\n".join(doc.page_content for doc in reranked_docs)
+    context = "\n\n".join(doc.page_content for doc in retrieved_docs)
 
     # 6. Générer le prompt
     prompt_text = generate_prompt(question, context)
@@ -60,4 +63,4 @@ def ask_question(question: str) -> tuple[str, list]:
     if not response_guardrail(generated_response):
         return "Désolé, la réponse générée n'est pas appropriée.", []
 
-    return generated_response, reranked_docs
+    return generated_response, retrieved_docs

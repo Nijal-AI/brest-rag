@@ -19,6 +19,16 @@ Ce projet a pour but de faciliter l'accès à l'information locale en s'appuyant
 	uv sync
 	```
 
+## Configuration
+1. Copiez le fichier `.env.template` vers `.env` :
+	```bash
+	cp .env.template .env
+	```
+
+2. Remplissez le fichier `.env` avec vos clés API et configurations :
+	- `OPENAI_API_KEY` : Votre clé API OpenAI
+	- `RERANKING` : Mettez `True` pour activer le reranking des résultats (un mini LLM sera chargé lors du lancement), ou `False` pour un simple retrieving sans reranking
+
 ## Utilisation rapide
 Exemple de lancement :
 ```bash
